@@ -29,5 +29,10 @@ species RankPig parent: BasePig{
 			}
 		}
 		invoke eat();
+		ask wait_queue {
+			if (myself.current = 3) {
+				 bool remove <- self.remove_pig(myself.id);
+			}
+		}
 	}
 }

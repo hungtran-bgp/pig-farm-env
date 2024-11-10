@@ -20,7 +20,7 @@ global {
 	list temperature_month <- [[20.0,21.0],[19.0,21.0],[19.0,21.0],[19.0,21.0]];
 	list<float> RH_month <- [73.93,74.84,86.17,86.17];
 	list<float> temperature_range <- [20.0,21.0];
-	float vel <- 0.35;
+	float vel <- 0.2;
     init {
     	do clear_dir();
     	pigs <- csv_file("../includes/input/pigs.csv", true);
@@ -50,12 +50,16 @@ global {
     	write(temperature_range);
     }
     
-    reflex update_temperature when: mod(cycle, 60*24)=0 {
+    reflex update_env when: mod(cycle, 60*24)=0 {
     	T <- rnd(min(temperature_range),max(temperature_range)) with_precision 2;
+    	vel <- rnd(0.2,0.3) with_precision 2;
     }
     action clear_dir {
     	bool delete_folder <- delete_file("../includes/output/qui/autumn");
     	file data <- new_folder("../includes/output/qui/autumn");
+    }
+    int get_current_day {
+    	return int(cycle /(60*24));
     }
 }
 
@@ -63,8 +67,30 @@ experiment Autumn type:gui {
 	parameter "Experiment ID" var: experiment_id <- "";
 	output {
 		display Simulator name: "Simulator" {
-            grid Background border: #white;
+            grid Background;
             species QuiPig aspect: base;
+            overlay position: {2, 2} size: {10, 5} background: #black transparency: 1 {
+				draw "Day: " + get_current_day() at: {0, 2} color: #black font: font("Arial", 14, #plain);
+				
+				draw "Temperature: " + T at: {1, 35} 
+					color: #black font: font("Arial", 14, #plain);
+					
+				draw "Relative Humidity: " + RH at: {1, 65} 
+					color: rgb(255, 150, 0) font: font("Arial", 14, #plain);
+					
+				draw "Air Velocity: " + vel at: {1, 95} 
+					color: #red font: font("Arial", 14, #plain);
+					
+				draw "ET: " + ET at: {1, 125} 
+					color: #green font: font("Arial", 14, #plain);
+//					
+//				draw "Dead: " + dead_pig_count at: {1, 155} 
+//					color: #gray font: font("Arial", 14, #plain);
+//					
+//				if (infected_pig_count > 0 or exposed_pig_count > 0) {
+//					draw "DISEASE DETECTED!" at: {2, 185} color: #red font: font("Arial", 12, #bold);
+//				}
+			}
         }
         display CFI name: "CFI" refresh: every((60 * 24)#cycles) {
         	chart "CFI" type: series {
@@ -114,13 +140,13 @@ experiment Autumn type:gui {
     		}
 		}		
     }
-    reflex capture when: mod(cycle, speed) = 0 {
-    	ask simulations {
-    		save (snapshot(self, "Simulator", {500.0, 500.0})) to: "../includes/output/qui/autumn/" + experiment_id + "-simulator-" + string(cycle) + ".png";
-    		save (snapshot(self, "CFI", {500.0, 500.0})) to: "../includes/output/qui/autumn/" + experiment_id + "-cfi-" + string(cycle) + ".png";
-    		save (snapshot(self, "Weight", {500.0, 500.0})) to: "../includes/output/qui/autumn/" + experiment_id + "-weight-" + string(cycle) + ".png";
-    		save (snapshot(self, "CFIPig0", {500.0, 500.0})) to: "../includes/output/qui/autumn/" + experiment_id + "-cfipig0-" + string(cycle) + ".png";
-    		save (snapshot(self, "DFIPig0", {500.0, 500.0})) to: "../includes/output/qui/autumn/" + experiment_id + "-dfipig0-" + string(cycle) + ".png";
-    	}
-    }
+//    reflex capture when: mod(cycle, speed) = 0 {
+//    	ask simulations {
+//    		save (snapshot(self, "Simulator", {500.0, 500.0})) to: "../includes/output/qui/autumn/" + experiment_id + "-simulator-" + string(cycle) + ".png";
+//    		save (snapshot(self, "CFI", {500.0, 500.0})) to: "../includes/output/qui/autumn/" + experiment_id + "-cfi-" + string(cycle) + ".png";
+//    		save (snapshot(self, "Weight", {500.0, 500.0})) to: "../includes/output/qui/autumn/" + experiment_id + "-weight-" + string(cycle) + ".png";
+//    		save (snapshot(self, "CFIPig0", {500.0, 500.0})) to: "../includes/output/qui/autumn/" + experiment_id + "-cfipig0-" + string(cycle) + ".png";
+//    		save (snapshot(self, "DFIPig0", {500.0, 500.0})) to: "../includes/output/qui/autumn/" + experiment_id + "-dfipig0-" + string(cycle) + ".png";
+//    	}
+//    }
 }

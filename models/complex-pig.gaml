@@ -20,17 +20,21 @@ global {
 	
 	reflex get_ET when:mod(cycle,60*24)=0 {
 		ET <-  T + get_Ehum() + get_Evel();
-		
 	}
 	float get_Ehum {
-		return 0.0015 * (RH-50)*T;
+		return (0.0015 * (RH-50)*T) with_precision 2;
 	}
 	float get_Evel {
-		return -1.0*(42-T)*(vel^0.66 - 0.2^0.66);
+		return (-1.0*(42-T)*(vel^0.66 - 0.2^0.66)) with_precision 2;
 	}
 }
 
 species BasePig parent:Pig {	
+	
+	aspect base {
+        draw circle(1.6) color: (ET > get_CT())? #red :#pink;
+        draw string(id) color: #black size: 5;
+    }
 	float target_dfi {
 		float temp <- ET;
 		float dfi_target <- -1264 + 117*temp - 2.4*(temp^2) + 73.6*weight - 0.26*(weight^2) -0.95*temp*weight;
