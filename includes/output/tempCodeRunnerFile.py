@@ -1,0 +1,1 @@
+drawAllDFI(list_pig0)

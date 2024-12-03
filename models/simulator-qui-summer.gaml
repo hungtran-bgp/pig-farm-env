@@ -10,8 +10,8 @@ model Simulator
 
 /* Insert your model definition here */
 
-import './complex-pig.gaml'
-
+import "./complex-pig.gaml"
+import "./hierarchy.gaml"
 global {
 	file pigs;
 	int speed;
@@ -20,11 +20,15 @@ global {
 	list temperature_month <- [[19.0,21.0],[24.0,26.0],[24.0,26.0],[26.0,26.0]];
 	list<float> RH_month <- [68.65,72.73,69.9,69.9];
 	list<float> temperature_range <- [19.0,21.0];
+	float total_space <- 36.0;
+	float vel <- 0.15;
     init {
     	do clear_dir();
     	pigs <- csv_file("../includes/input/pigs.csv", true);
     	speed <- 45;
-    	create QuiPig from: pigs;
+    	create Hierarchy number:1;
+    	create wait_queue number:1;
+    	create QuiSummerPig from: pigs;
         create Trough number: 5;
         loop i from: 0 to: 4 {
         	Trough[i].location <- trough_locs[i];
@@ -49,24 +53,34 @@ global {
     }
     
     reflex update_temperature when: mod(cycle, 60*24)=0 {
-    	T <- rnd(min(temperature_range),max(temperature_range)) with_precision 2;
+    	int temp_change <- flip(0.5) ? 1 : -1;
+    	float temp_diff <- rnd(0.0,1.0) with_precision 2;
+    	T <- T + temp_change*temp_diff;
+    	float temp_max <- max(temperature_range);
+    	float temp_min <- min(temperature_range);
+    	if (T > temp_max) {
+    		T <- temp_max;
+    	}
+    	else if(T < temp_min) {
+    		T <- temp_min;
+    	}
     	vel <- rnd(0.1,0.2) with_precision 2;
     }
     action clear_dir {
-    	bool delete_folder <- delete_file("../includes/output/qui/summer");
-    	file data <- new_folder("../includes/output/qui/summer");
+    	bool delete_folder <- delete_file("../includes/output/qui/summer/" + experiment_id);
+    	file data <- new_folder("../includes/output/qui/summer/" + experiment_id);
     }
     int get_current_day {
     	return int(cycle / (60*24));
     }
 }
 
-experiment Summer type:gui {
-	parameter "Experiment ID" var: experiment_id <- "";
+experiment QS type:gui {
+	parameter "Experiment ID" var: experiment_id <- "9";
 	output {
 		display Simulator name: "Simulator" {
             grid Background;
-            species QuiPig aspect: base;
+            species QuiSummerPig aspect: base;
             overlay position: {2, 2} size: {10, 5} background: #black transparency: 1 {
 				draw "Day: " + get_current_day() at: {0, 2} color: #black font: font("Arial", 14, #plain);
 				
@@ -92,39 +106,39 @@ experiment Summer type:gui {
         }
         display CFI name: "CFI" refresh: every((60 * 24)#cycles) {
         	chart "CFI" type: series {
-        		loop pig over: QuiPig {
+        		loop pig over: QuiSummerPig {
         			data string(pig.id) value: pig.cfi;
         		}
         	}
         }
         display Weight name: "Weight" refresh: every((60 * 24)#cycles) {
         	chart "Weight" type: histogram {
-        		loop pig over: QuiPig {
+        		loop pig over: QuiSummerPig {
         			data string(pig.id) value: pig.weight;
         		}
         	}
         }
         display CFIPig0 name: "CFIPig0" refresh: every((60 * 24)#cycles) {
         	chart "CFI vs Target CFI" type: series {
-        		data 'CFI' value: QuiPig[0].cfi;
-        		data 'Target CFI' value: QuiPig[0].target_cfi;
+        		data 'CFI' value: QuiSummerPig[0].cfi;
+        		data 'Target CFI' value: QuiSummerPig[0].target_cfi;
         	}
         }
         display DFIPig0 name: "DFIPig0" refresh: every((60 * 24)#cycles) {
         	chart "DFI vs Target DFI" type: series {
-        		data 'DFI' value: QuiPig[0].dfi;
-        		data 'Target DFI' value: QuiPig[0].target_dfi;
+        		data 'DFI' value: QuiSummerPig[0].dfi;
+        		data 'Target DFI' value: QuiSummerPig[0].target_dfi;
         	}
         }
         display Temperature name: "Temperature" refresh: every((60 * 24)#cycles) {
-        	chart "Temperature daily" type: series {
+        	chart " Effective Temperature" type: series {
         		data 'temperature' value: ET;
         	}
         }
 	}
 	reflex log when: mod(cycle, 24 * 60) = 0 {
     	ask simulations {
-    		loop pig over: QuiPig {
+    		loop pig over: QuiSummerPig {
     			save [
     				floor(cycle / (24 * 60)),
     				pig.id,
@@ -132,8 +146,9 @@ experiment Summer type:gui {
     				pig.dfi,
     				pig.target_cfi,
     				pig.cfi,
-    				pig.weight
-    			] to: "../includes/output/qui/summer/" + experiment_id + "-" + string(pig.id) + ".csv" rewrite: false format: "csv";	
+    				pig.weight,
+    				ET
+    			] to: "../includes/output/qui/summer/" + experiment_id + "/" + string(pig.id) + ".csv" rewrite: false format: "csv";	
     		}
 		}		
     }

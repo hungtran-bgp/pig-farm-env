@@ -38,10 +38,10 @@ experiment Normal {
             grid Background border: #white;
             species Pig aspect: base;
         }
-        display CFI name: "CFI" refresh: every((60 * 24)#cycles) {
-        	chart "CFI" type: series {
+        display DFI name: "DFI" refresh: every((60 * 24)#cycles) {
+        	chart "DFI" type: series {
         		loop pig over: Pig {
-        			data string(pig.id) value: pig.cfi;
+        			data string(pig.id) value: pig.dfi;
         		}
         	}
         }
@@ -85,13 +85,13 @@ experiment Normal {
 		}
     }
     
-    reflex capture when: mod(cycle, speed) = 0 {
-    	ask simulations {
-    		save (snapshot(self, "Simulator", {500.0, 500.0})) to: "../includes/output/normal/" + experiment_id + "-simulator-" + string(cycle) + ".png";
-    		save (snapshot(self, "CFI", {500.0, 500.0})) to: "../includes/output/normal/" + experiment_id + "-cfi-" + string(cycle) + ".png";
-    		save (snapshot(self, "Weight", {500.0, 500.0})) to: "../includes/output/normal/" + experiment_id + "-weight-" + string(cycle) + ".png";
-    		save (snapshot(self, "CFIPig0", {500.0, 500.0})) to: "../includes/output/normal/" + experiment_id + "-cfipig0-" + string(cycle) + ".png";
-    		save (snapshot(self, "DFIPig0", {500.0, 500.0})) to: "../includes/output/normal/" + experiment_id + "-dfipig0-" + string(cycle) + ".png";
-    	}
-    }
+//    reflex capture when: mod(cycle, speed) = 0 {
+//    	ask simulations {
+//    		save (snapshot(self, "Simulator", {500.0, 500.0})) to: "../includes/output/normal/" + experiment_id + "-simulator-" + string(cycle) + ".png";
+//    		save (snapshot(self, "CFI", {500.0, 500.0})) to: "../includes/output/normal/" + experiment_id + "-cfi-" + string(cycle) + ".png";
+//    		save (snapshot(self, "Weight", {500.0, 500.0})) to: "../includes/output/normal/" + experiment_id + "-weight-" + string(cycle) + ".png";
+//    		save (snapshot(self, "CFIPig0", {500.0, 500.0})) to: "../includes/output/normal/" + experiment_id + "-cfipig0-" + string(cycle) + ".png";
+//    		save (snapshot(self, "DFIPig0", {500.0, 500.0})) to: "../includes/output/normal/" + experiment_id + "-dfipig0-" + string(cycle) + ".png";
+//    	}
+//    }
 }
