@@ -136,7 +136,7 @@ experiment RS_VN type:gui {
         	}
         }
         display Temperature name: "Temperature" refresh: every((60 * 24)#cycles) {
-        	chart "Temperature daily" type: series {
+        	chart "Effective temperature" type: series {
         		data 'temperature' value: ET;
         	}
         }

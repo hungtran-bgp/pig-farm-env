@@ -239,7 +239,7 @@ def calculate_reach_110kg(folder_pattern):
         day_column = data.iloc[:, 0]  # Cột ngày (giả định là cột đầu)
         
         # Tìm ngày đầu tiên cân nặng đạt hoặc vượt 110 kg
-        reached = weight_column[weight_column >= 105]
+        reached = weight_column[weight_column >= 100]
         if not reached.empty:
             reached_count += 1
             first_day = day_column[reached.index[0]]
@@ -282,6 +282,6 @@ qui_summer = "qui/summer/*/*.csv"
 # cmp_cfi_VN("qui/summer/*/*.csv","qui/summer_restrict/*/*.csv")
 # draw_season_result("qui/summer/*/*.csv","qui/summer_restrict/*/*.csv")
 
-result = calculate_reach_110kg("qui/autumn/*/*.csv")
+result = calculate_reach_110kg("vn_qui/summer/*/*.csv")
 print(f"Phần trăm cá thể đạt 110 kg: {result['percentage_reached']}%")
 print(f"Thời gian trung bình đạt 110 kg: {result['average_days']} ngày")
