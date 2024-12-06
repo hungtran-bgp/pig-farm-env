@@ -21,7 +21,7 @@ global {
 	float temp_min;
 	float RH_max <- 85.0;
 	float RH_min <- 75.0;
-	float total_space <- 20.0;
+	float total_space <- 12.0;
 	float vel <- 0.15;
     init {
     	do clear_dir();

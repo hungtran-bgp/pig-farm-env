@@ -226,6 +226,37 @@ def cmp_cfi_VN(autumn = "qui/autumn/*/*.csv",summer="qui/summer/*/*.csv"):
     plt.legend()
     plt.grid(True)
     plt.show()
+
+def calculate_reach_110kg(folder_pattern):
+    files = glob.glob(folder_pattern)  # Lấy tất cả các file CSV trong thư mục
+    total_pigs = len(files)  # Tổng số cá thể
+    reached_count = 0  # Số cá thể đạt 110 kg
+    total_days = 0  # Tổng số ngày của các cá thể đạt 110 kg
+    
+    for file in files:
+        data = pd.read_csv(file)  # Đọc dữ liệu từ file
+        weight_column = data.iloc[:, 6]  # Cột cân nặng (giả định là cột cuối)
+        day_column = data.iloc[:, 0]  # Cột ngày (giả định là cột đầu)
+        
+        # Tìm ngày đầu tiên cân nặng đạt hoặc vượt 110 kg
+        reached = weight_column[weight_column >= 105]
+        if not reached.empty:
+            reached_count += 1
+            first_day = day_column[reached.index[0]]
+            total_days += first_day
+    
+    # Tính phần trăm cá thể đạt 110 kg
+    percentage_reached = (reached_count / total_pigs) * 100
+    
+    # Tính thời gian trung bình (nếu có cá thể nào đạt 110 kg)
+    average_days = total_days / reached_count if reached_count > 0 else None
+    
+    return {
+        "percentage_reached": percentage_reached,
+        "average_days": average_days
+    }
+
+
 pig0 = "qui/autumn/0/0.csv"
 pig1 = "qui/summer/0/0.csv"
 
@@ -248,5 +279,9 @@ qui_summer = "qui/summer/*/*.csv"
 # drawDFI("vn_rena/summer/0/0.csv")
 #drawAllDFI("vn_rena/summer/*/*.csv")
 # cmp_cfi_VN("vn_qui/autumn/*/*.csv","vn_qui/summer/*/*.csv")
-cmp_cfi_VN("qui/summer/*/*.csv","qui/summer_restrict/*/*.csv")
+# cmp_cfi_VN("qui/summer/*/*.csv","qui/summer_restrict/*/*.csv")
 # draw_season_result("qui/summer/*/*.csv","qui/summer_restrict/*/*.csv")
+
+result = calculate_reach_110kg("qui/autumn/*/*.csv")
+print(f"Phần trăm cá thể đạt 110 kg: {result['percentage_reached']}%")
+print(f"Thời gian trung bình đạt 110 kg: {result['average_days']} ngày")
